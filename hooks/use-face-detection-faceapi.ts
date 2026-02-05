@@ -12,7 +12,17 @@ import { useEffect, useRef, useState, useCallback } from "react";
 
 declare global {
   interface Window {
-    faceapi: any;
+    faceapi?: {
+      nets?: Record<string, { load?: (path: string) => Promise<void> }>;
+      detectSingleFace?: (input: HTMLVideoElement | HTMLCanvasElement) => {
+        withFaceLandmarks?: () => {
+          withFaceDescriptors?: () => Promise<{
+            detection?: { box?: { x: number; y: number; width: number; height: number } };
+            score?: number;
+          }[]>;
+        };
+      };
+    };
   }
 }
 
@@ -43,7 +53,10 @@ export function useFaceDetectionFaceAPI(options: UseFaceDetectionOptions = {}) {
     modelType = "tiny", // Use tiny model for performance
   } = options;
 
-  const detectorRef = useRef<any>(null);
+  const detectorRef = useRef<{
+    load?: (path: string) => Promise<void>;
+    detect?: (input: HTMLVideoElement | HTMLCanvasElement) => Promise<{ box: { x: number; y: number; width: number; height: number }; score: number }[]>;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentFace, setCurrentFace] = useState<DetectedFace | null>(null);

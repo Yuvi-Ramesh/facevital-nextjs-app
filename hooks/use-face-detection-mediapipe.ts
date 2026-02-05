@@ -12,8 +12,12 @@ import { useEffect, useRef, useState, useCallback } from "react";
 
 declare global {
   interface Window {
-    FaceDetection?: any;
-    FilesetResolver?: any;
+    FaceDetection?: {
+      createFromOptions?: (resolver: unknown, options: unknown) => Promise<unknown>;
+    };
+    FilesetResolver?: {
+      forVisionTasks?: (wasmPath: string) => Promise<unknown>;
+    };
   }
 }
 
@@ -46,7 +50,15 @@ export function useFaceDetectionMediaPipe(
     detectionMode = "LIVE_STREAM",
   } = options;
 
-  const detectorRef = useRef<any>(null);
+  const detectorRef = useRef<{
+    detectForVideo?: (video: HTMLVideoElement, timestamp: number) => {
+      detections?: Array<{
+        boundingBox?: { originX?: number; originY?: number; width?: number; height?: number };
+        categories?: Array<{ score?: number }>;
+      }>;
+    };
+    close?: () => void;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentFace, setCurrentFace] = useState<DetectedFace | null>(null);
@@ -120,11 +132,12 @@ export function useFaceDetectionMediaPipe(
 
       script.onload = () => {
         // Wait for MediaPipe global to be available
+        const globalWindow = window as typeof window & {
+          FaceDetection?: unknown;
+          FilesetResolver?: unknown;
+        };
         const checkGlobal = setInterval(() => {
-          if (
-            (window as any).FaceDetection &&
-            (window as any).FilesetResolver
-          ) {
+          if (globalWindow.FaceDetection && globalWindow.FilesetResolver) {
             clearInterval(checkGlobal);
             resolve();
           }

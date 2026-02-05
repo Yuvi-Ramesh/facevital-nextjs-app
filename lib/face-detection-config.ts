@@ -202,10 +202,15 @@ export function logFaceDetectionDebugInfo() {
 
   // Check if CDN resources are accessible
   if (typeof window !== "undefined") {
+    const globalWindow = window as typeof window & {
+      faceapi?: unknown;
+      FaceDetection?: unknown;
+      FilesetResolver?: unknown;
+    };
     console.log("Window globals available:", {
-      faceapi: !!(window as any).faceapi,
-      FaceDetection: !!(window as any).FaceDetection,
-      FilesetResolver: !!(window as any).FilesetResolver,
+      faceapi: !!globalWindow.faceapi,
+      FaceDetection: !!globalWindow.FaceDetection,
+      FilesetResolver: !!globalWindow.FilesetResolver,
     });
   }
 

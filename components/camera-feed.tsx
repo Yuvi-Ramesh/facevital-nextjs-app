@@ -4,10 +4,18 @@ import React, { useRef, useEffect, useState } from "react";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useFaceDetection } from "@/hooks/use-face-detection";
 
+interface DetectedFaceInfo {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  confidence?: number;
+}
+
 interface CameraFeedProps {
   onFrameCapture?: (canvasData: ImageData) => void;
   isRecording?: boolean;
-  onFaceDetected?: (face: any) => void;
+  onFaceDetected?: (face: DetectedFaceInfo | null) => void;
 }
 
 export function CameraFeed({
@@ -22,7 +30,7 @@ export function CameraFeed({
   const [isCameraActive, setIsCameraActive] = useState(false);
   const animationFrameRef = useRef<number | null>(null);
   const [faceDetected, setFaceDetected] = useState(false);
-  const [detectedFace, setDetectedFace] = useState<any>(null);
+  const [detectedFace, setDetectedFace] = useState<DetectedFaceInfo | null>(null);
 
   // Initialize face detection
   const { detectFace } = useFaceDetection({
